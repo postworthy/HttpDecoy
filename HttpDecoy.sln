@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpDecoy", "HttpDecoy\HttpDecoy.csproj", "{7D553674-E971-4C1F-B6C7-5C44994A9548}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{2CE93D6F-B2CE-4E9E-A650-06988C721876}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7D553674-E971-4C1F-B6C7-5C44994A9548}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D553674-E971-4C1F-B6C7-5C44994A9548}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D553674-E971-4C1F-B6C7-5C44994A9548}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D553674-E971-4C1F-B6C7-5C44994A9548}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2CE93D6F-B2CE-4E9E-A650-06988C721876}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CE93D6F-B2CE-4E9E-A650-06988C721876}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CE93D6F-B2CE-4E9E-A650-06988C721876}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CE93D6F-B2CE-4E9E-A650-06988C721876}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E74C1E49-3345-4219-9948-E6CE21CBE377}
+	EndGlobalSection
+EndGlobal
