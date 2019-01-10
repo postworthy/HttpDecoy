@@ -2,42 +2,49 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using HttpDecoy.Models;
+using Newtonsoft.Json;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace HttpDecoy.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
-        }
+            var notifyUrl = Environment.GetEnvironmentVariable("NOTIFY_URL");
+            if (string.IsNullOrEmpty(notifyUrl))
+                return Error();
 
-        public IActionResult About()
-        {
-            ViewData["Message"] = "Your application description page.";
+            var data = new
+            {
+                Headers = Request.Headers.Select(x => new { x.Key, x.Value }),
+                Cookies = Request.Cookies.Select(x => new { x.Key, x.Value }),
+                Form = Request.HasFormContentType ? Request.Form.Select(x => new { x.Key, x.Value }) : null,
+                Query = Request.Query.Select(x => new { x.Key, x.Value }),
+                Host = Request.Host.ToString(),
+                Path = Request.Path.ToString(),
+                RemoteIpAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString()
+            };
 
-            return View();
-        }
+            try
+            {
+                using (var c = new HttpClient())
+                {
+                    await c.PostAsJsonAsync(notifyUrl, data);
+                }
+            }
+            catch { }
 
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
+            return new NotFoundResult();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return new StatusCodeResult(500);
         }
     }
 }

@@ -6,6 +6,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=https://+:443;http://+:80
       - ASPNETCORE_HTTPS_PORT=44312
+      - NOTIFY_URL=http://192.168.1.127:8888
     ports:
       - "17790:80"
       - "44312:443"
