@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.HttpOverrides;
+using System.Net.Mail;
 
 namespace HttpDecoy.Controllers
 {
@@ -15,7 +16,14 @@ namespace HttpDecoy.Controllers
         public async Task<IActionResult> Index()
         {
             var notifyUrl = Environment.GetEnvironmentVariable("NOTIFY_URL");
-            if (string.IsNullOrEmpty(notifyUrl))
+            var emailServer = Environment.GetEnvironmentVariable("EMAIL_SERVER");
+            var emailFrom = Environment.GetEnvironmentVariable("EMAIL_FROM");
+            var emailPassword = Environment.GetEnvironmentVariable("EMAIL_FROM_PASSWORD");
+            var emailTo = Environment.GetEnvironmentVariable("EMAIL_TO");
+            
+            bool.TryParse(Environment.GetEnvironmentVariable("ENABLE_SSL"), out bool enableSsl);
+
+            if (string.IsNullOrEmpty(notifyUrl) && (string.IsNullOrEmpty(emailServer) || string.IsNullOrEmpty(emailFrom) || string.IsNullOrEmpty(emailTo)))
                 return Error();
 
             var data = new
@@ -29,14 +37,42 @@ namespace HttpDecoy.Controllers
                 RemoteIpAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString()
             };
 
-            try
+            if (!string.IsNullOrEmpty(notifyUrl))
             {
-                using (var c = new HttpClient())
+                try
                 {
-                    await c.PostAsJsonAsync(notifyUrl, data);
+                    using (var c = new HttpClient())
+                    {
+                        await c.PostAsJsonAsync(notifyUrl, data);
+                    }
                 }
+                catch (Exception ex) { Console.Error.Write(ex.ToString()); }
             }
-            catch { }
+
+            if(!(string.IsNullOrEmpty(emailServer) || string.IsNullOrEmpty(emailFrom)))
+            {
+                try
+                {
+                    MailMessage msg = new MailMessage
+                    {
+                        From = new MailAddress(emailFrom),
+                        Subject = "HttpDecoy Notification",
+                        Body = JsonConvert.SerializeObject(data, Formatting.Indented)
+                    };
+                    msg.To.Add(emailTo ?? emailFrom);
+                    SmtpClient smtp = new SmtpClient
+                    {
+                        Host = emailServer.Split(':').First(),
+                        Port = emailServer.Split(':').Count() == 2 ? int.Parse(emailServer.Split(':').Last()) : 25,
+                        EnableSsl = false
+                    };
+                    if (!string.IsNullOrEmpty(emailPassword))
+                        smtp.Credentials = new System.Net.NetworkCredential(emailFrom, emailPassword);
+
+                    smtp.Send(msg);
+                }
+                catch(Exception ex) { Console.Error.Write(ex.ToString()); }
+            }
 
             return new NotFoundResult();
         }
