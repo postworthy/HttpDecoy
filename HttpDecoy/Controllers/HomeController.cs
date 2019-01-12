@@ -15,12 +15,13 @@ namespace HttpDecoy.Controllers
     {
         public async Task<IActionResult> Index()
         {
+            var artifactUrl = Environment.GetEnvironmentVariable("ARTIFACT_URL");
             var notifyUrl = Environment.GetEnvironmentVariable("NOTIFY_URL");
             var emailServer = Environment.GetEnvironmentVariable("EMAIL_SERVER");
             var emailFrom = Environment.GetEnvironmentVariable("EMAIL_FROM");
             var emailPassword = Environment.GetEnvironmentVariable("EMAIL_FROM_PASSWORD");
             var emailTo = Environment.GetEnvironmentVariable("EMAIL_TO");
-            
+
             bool.TryParse(Environment.GetEnvironmentVariable("ENABLE_SSL"), out bool enableSsl);
 
             if (string.IsNullOrEmpty(notifyUrl) && (string.IsNullOrEmpty(emailServer) || string.IsNullOrEmpty(emailFrom) || string.IsNullOrEmpty(emailTo)))
@@ -43,13 +44,14 @@ namespace HttpDecoy.Controllers
                 {
                     using (var c = new HttpClient())
                     {
+                        c.Timeout = new TimeSpan(0, 0, 15);
                         await c.PostAsJsonAsync(notifyUrl, data);
                     }
                 }
                 catch (Exception ex) { Console.Error.Write(ex.ToString()); }
             }
 
-            if(!(string.IsNullOrEmpty(emailServer) || string.IsNullOrEmpty(emailFrom)))
+            if (!(string.IsNullOrEmpty(emailServer) || string.IsNullOrEmpty(emailFrom)))
             {
                 try
                 {
@@ -71,7 +73,22 @@ namespace HttpDecoy.Controllers
 
                     smtp.Send(msg);
                 }
-                catch(Exception ex) { Console.Error.Write(ex.ToString()); }
+                catch (Exception ex) { Console.Error.Write(ex.ToString()); }
+            }
+
+            if (!string.IsNullOrEmpty(artifactUrl))
+            {
+                try
+                {
+                    using (var c = new HttpClient())
+                    {
+                        var filename = System.Web.MimeMapping.GetFileName(artifactUrl).Trim(new[] { '\\', '/' });
+                        var mime = System.Web.MimeMapping.GetMimeMapping(artifactUrl);
+                        var artifact = new FileStreamResult(await c.GetStreamAsync(artifactUrl), mime) { FileDownloadName = filename };
+                        return artifact;
+                    }
+                }
+                catch (Exception ex) { Console.Error.Write(ex.ToString()); }
             }
 
             return new NotFoundResult();
