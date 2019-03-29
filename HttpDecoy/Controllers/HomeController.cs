@@ -38,7 +38,7 @@ namespace HttpDecoy.Controllers
                 RemoteIpAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString()
             };
 
-            Console.WriteLine(JsonConvert.SerializeObject(data, Formatting.Indented));
+            Console.WriteLine("DecoyRequestData=" + JsonConvert.SerializeObject(data, Formatting.None));
 
             if (!string.IsNullOrEmpty(notifyUrl))
             {
